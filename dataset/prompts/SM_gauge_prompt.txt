@@ -1,0 +1,22 @@
+######################################################
+###                                                ###
+###      Standard Model of Particle Physics        ###
+###                                                ###
+######################################################
+
+######################################################
+GAUGE_GROUP_BLOCK
+# start   id   rank    end        # name         boson 
+GAUGE_U   g_1  rank_1  END_GAUGE  # hypercharge  B
+GAUGE_SU  g_2  rank_2  END_GAUGE  # left         WB
+GAUGE_SU  g_3  rank_3  END_GAUGE  # color        G
+
+
+######################################################
+SSB_BLOCK
+# start       id   reps                                      dim       parameters  vec              end
+VEV           v_1  REPS  singlet fnd hypercharge_3 END_REPS  dim_2     SM_VEV      VEC 0 1 END_VEC  END_VEV
+
+######################################################
+PARTICLE_BLOCK
+# type        color     chirality charge     num   tags               end

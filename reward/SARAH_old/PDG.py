@@ -1,0 +1,21 @@
+PDG_IDS = {
+    "gamma": {"full_name": "Photon", "name": "gamma", "pdgid": 22, "spin": 2, "mass": 0, "width": 0, "charge": 0, "color": 1},
+    "Z": {"full_name": "Z Boson", "name": "Z", "pdgid": 23, "spin": 2, "mass": 91.1876, "width": 2.4952, "charge": 0, "color": 1},
+    "W": {"full_name": "W Boson", "name": "W", "pdgid": 24, "spin": 2, "mass": 80.379, "width": 2.0476, "charge": 3, "color": 1},
+    "g": {"full_name": "Gluon", "name": "G", "pdgid": 21, "spin": 2, "mass": 0, "width": 0, "charge": 0, "color": 8},
+    "h": {"full_name": "Higgs Boson", "name": "H", "pdgid": 25, "spin": 0, "mass": 125.25, "width": 0.00407, "charge": 0, "color": 1},
+    "SM_E": {"full_name": "Electron", "name": "e", "pdgid": 11, "spin": 1, "mass": 0.000511, "width": 0, "charge": -3, "color": 1, "flavor": "e"},
+    "SM_MU": {"full_name": "Muon", "name": "mu", "pdgid": 13, "spin": 1, "mass": 0.1057, "width": 0, "charge": -3, "color": 1, "flavor": "mu"},
+    "SM_TAU": {"full_name": "Tau", "name": "tau", "pdgid": 15, "spin": 1, "mass": 1.777, "width": 0, "charge": -3, "color": 1, "flavor": "tau"},
+    "SM_VE": {"full_name": "Electron-neutrino", "name": "ve", "pdgid": 12, "spin": 1, "mass": 0, "width": 0, "charge": 0, "color": 1, "flavor": "e"},
+    "SM_VM": {"full_name": "Muon-neutrino", "name": "vm", "pdgid": 14, "spin": 1, "mass": 0, "width": 0, "charge": 0, "color": 1, "flavor": "mu"},
+    "SM_VT": {"full_name": "Tau-neutrino", "name": "vt", "pdgid": 16, "spin": 1, "mass": 0, "width": 0, "charge": 0, "color": 1, "flavor": "tau"},
+    "SM_U": {"full_name": "u-quark", "name": "u", "pdgid": 2, "spin": 1, "mass": 0.0023, "width": 0, "charge": 2, "color": 3, "flavor": "u"},
+    "SM_D": {"full_name": "d-quark", "name": "d", "pdgid": 1, "spin": 1, "mass": 0.0047, "width": 0, "charge": -1, "color": 3, "flavor": "d"},
+    "SM_C": {"full_name": "c-quark", "name": "c", "pdgid": 4, "spin": 1, "mass": 1.27, "width": 0, "charge": 2, "color": 3, "flavor": "c"},
+    "SM_S": {"full_name": "s-quark", "name": "s", "pdgid": 3, "spin": 1, "mass": 0.095, "width": 0, "charge": -1, "color": 3, "flavor": "s"},
+    "SM_B": {"full_name": "b-quark", "name": "b", "pdgid": 5, "spin": 1, "mass": 4.18, "width": 0, "charge": -1, "color": 3, "flavor": "b"},
+    "SM_T": {"full_name": "Top Quark", "name": "t", "pdgid": 6, "spin": 1, "mass": 173.21, "width": 0, "charge": 2, "color": 3, "flavor": "t"},
+    "Hp": {"full_name": "Charged Goldstone", "name": "Hp", "pdgid": 251, "spin": 0, "mass": 0, "width": "Automatic", "charge": 3, "color": 1},
+    "H0": {"full_name": "Neutral Goldstone", "name": "H0", "pdgid": 250, "spin": 0, "mass": 0, "width": "Automatic", "charge": 0, "color": 1}
+}

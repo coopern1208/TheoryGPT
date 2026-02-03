@@ -1,0 +1,51 @@
+######################################################
+###                                                ###
+###      Standard Model of Particle Physics        ###
+###                                                ###
+######################################################
+
+######################################################
+GAUGE_GROUP_BLOCK
+# start   id   rank    end        # name         boson 
+GAUGE_U   g_1  rank_1  END_GAUGE  # hypercharge  B
+GAUGE_SU  g_2  rank_2  END_GAUGE  # left         WB
+GAUGE_SU  g_3  rank_3  END_GAUGE  # color        G
+
+
+######################################################
+SSB_BLOCK
+# start       id   reps                                      dim       parameters  vec              end
+VEV           v_1  REPS  singlet fnd hypercharge_3 END_REPS  dim_2     SM_VEV      VEC 0 1 END_VEC  END_VEV
+
+######################################################
+PARTICLE_BLOCK
+# type        color     chirality charge     num   tags               end
+PTCL_FERMION  NO_COLOR  NULL      charge_-6  NUM_3 SM_E  SM_MU SM_TAU END_PTCL
+PTCL_FERMION  NO_COLOR  LEFT      charge_0   NUM_3 SM_VE SM_VM SM_VT  END_PTCL
+PTCL_FERMION  COLOR     NULL      charge_4   NUM_2 SM_U  SM_C         END_PTCL
+PTCL_FERMION  COLOR     NULL      charge_-2  NUM_3 SM_D  SM_S  SM_B   END_PTCL
+
+
+######################################################
+MULTIPLET_BLOCK
+# start        id   chirality  reps                                           mass_type  dim    gen    end  
+MPLT_CSCALAR   m_1  ACQUIRE    v_1  END_MULTIPLET  # Higgs doublet
+MPLT_FERMION   m_2  LEFT       REPS  singlet fnd hypercharge_-3 END_REPS      DIRAC      dim_2  gen_3  END_MULTIPLET  # left lepton
+MPLT_FERMION   m_3  RIGHT      REPS  singlet singlet hypercharge_-6 END_REPS  DIRAC      dim_1  gen_3  END_MULTIPLET  # electron-like lepton
+MPLT_FERMION   m_4  LEFT       REPS  fnd fnd hypercharge_1 END_REPS           DIRAC      dim_2  gen_3  END_MULTIPLET  # left quark
+MPLT_FERMION   m_5  RIGHT      REPS  fnd singlet hypercharge_4 END_REPS       DIRAC      dim_1  gen_3  END_MULTIPLET  # right up-type quark
+MPLT_FERMION   m_6  RIGHT      REPS  fnd singlet hypercharge_-2 END_REPS      DIRAC      dim_1  gen_3  END_MULTIPLET  # right down-type quark
+
+ANOMALIES
+ZERO ZERO ZERO ZERO ZERO
+END_ANOMALIES
+
+######################################################
+INTERACTION_BLOCK
+# start      id   mplt_list                   parameters                                     end
+TERM_PHI2    i_1  MPLTS m_1 END_MPLT          PARAMS v_1                END_PARAM            END_INTERACTION
+TERM_PHI4    i_2  MPLTS m_1 END_MPLT          PARAMS param_1e-1         END_PARAM            END_INTERACTION
+TERM_YUKAWA  i_3  MPLTS m_1 m_2 m_3 END_MPLT  PARAMS SM_E SM_MU SM_TAU  END_PARAM            END_INTERACTION
+TERM_YUKAWA  i_4  MPLTS m_1 m_4 m_5 END_MPLT  PARAMS SM_U SM_C mass_1e2 END_PARAM            END_INTERACTION
+TERM_YUKAWA  i_5  MPLTS m_1 m_4 m_6 END_MPLT  PARAMS SM_D SM_S SM_B     END_PARAM            END_INTERACTION
+
