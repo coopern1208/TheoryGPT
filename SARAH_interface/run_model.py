@@ -60,3 +60,8 @@ class ObservableComputation:
         with open(self.OBS_LIST_PATH, "r") as file:
             self.observables = json.load(file)
         
+if __name__ == "__main__":
+    observable_computation = ObservableComputation(model_name="SM")
+    observable_computation.pre_check()
+    observable_computation.load_observables()
+    print(observable_computation.observables)
