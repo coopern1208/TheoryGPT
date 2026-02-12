@@ -82,7 +82,6 @@ class TheoryEnvironment:
             print(f"ERROR: get_valid_tokens returned None for token='{self.prev_token}', state.current_block='{self.state.current_block}'")
             valid_tokens = ["EOS"]  # Fallback
         
-        # Execute action
         self.sequence.append(action)
         self.valid_token_history.append(vocab.encode(valid_tokens))
         self.state = self.grammar_masker.step(self.state, action)
@@ -90,29 +89,15 @@ class TheoryEnvironment:
         self.step_count += 1
         self.total_steps += 1
         
-        # Check termination conditions
         self._check_termination(action)
-
-        # Calculate reward if episode is done
-        if self.done: 
-            self.total_score = self._calculate_reward()
+        if self.done: self.total_score = self._calculate_reward()
         
-        # Prepare info dictionary
-        info = {
-            "success": self.done and not self.theory_too_long,
-            "termination_reason": self._get_termination_reason(),
-            "step_count": self.step_count,
-        }
+        info = {"success": self.done and not self.theory_too_long,
+                "termination_reason": self._get_termination_reason(),
+                "step_count": self.step_count}
         
-        # Add reward details if done
-        if self.done:
-            info.update(self.rewards)
-        
-        # Get observation
+        if self.done: info.update(self.rewards) 
         observation = self._get_observation()
-        
-        # Return (observation, reward, done, info)
-        # Reward is 0 for intermediate steps, total_score when done
         reward = self.total_score if self.done else 0.0
         
         return observation, reward, self.done, info
@@ -122,7 +107,6 @@ class TheoryEnvironment:
     def _get_observation(self) -> Dict[str, Any]:
         valid_tokens = self.grammar_masker.get_valid_tokens(self.state, self.prev_token)
         
-        # Handle terminal state where there are no more valid tokens
         if valid_tokens is None: valid_tokens = []
         
         return {"sequence": self.sequence.copy(),

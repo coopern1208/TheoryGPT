@@ -9,7 +9,7 @@ def U1_SU3_anomaly(multiplets):
         SU3_rep = multiplet['rep_list'][0]
         color_rep = multiplet['rep_list'][0]
         color_num = lie.SU_N_dim(3, color_rep)
-        gen_num = int(multiplet['gen'][4:])
+        gen_num = multiplet['gen']
         dim_num = multiplet['dim']
         Y = int(multiplet['rep_list'][2][12:])    
         dynkin_idx = lie.SU_N_Dynkin_index(3, SU3_rep)
@@ -25,7 +25,7 @@ def U1_SU2_anomaly(multiplets):
         SU2_rep = multiplet['rep_list'][1]
         color_rep = multiplet['rep_list'][0]
         color_num = lie.SU_N_dim(3, color_rep)
-        gen_num = int(multiplet['gen'][4:])
+        gen_num = multiplet['gen']
         dim_num = multiplet['dim']
         Y = int(multiplet['rep_list'][2][12:])    
         dynkin_idx = lie.SU_N_Dynkin_index(2, SU2_rep)
@@ -40,7 +40,7 @@ def U1_anomaly(multiplets):
         chiral = 1 if multiplet['chirality'] == "LEFT" else -1
         color_rep = multiplet['rep_list'][0]
         color_num = lie.SU_N_dim(3, color_rep)
-        gen_num = int(multiplet['gen'][4:])
+        gen_num = multiplet['gen']
         dim_num = multiplet['dim']
         Y = int(multiplet['rep_list'][2][12:])    
         coeff += chiral * gen_num * dim_num * color_num * Y**3
@@ -54,7 +54,7 @@ def grav_anomaly(multiplets):
         chiral = 1 if multiplet['chirality'] == "LEFT" else -1
         color_rep = multiplet['rep_list'][0]
         color_num = lie.SU_N_dim(3, color_rep)
-        gen_num = int(multiplet['gen'][4:])
+        gen_num = multiplet['gen']
         dim_num = multiplet['dim']
         Y = int(multiplet['rep_list'][2][12:])    
         coeff += chiral * gen_num * dim_num * color_num * Y

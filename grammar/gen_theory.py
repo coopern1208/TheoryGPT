@@ -53,7 +53,6 @@ def generate_theory(grammar_masker: GrammarMasker,
         valid_tokens = grammar_masker.get_valid_tokens(state, prev_token)
         if "THEORY_TOO_LONG" in valid_tokens: theory_too_long = True
         elif "TOO_MANY_INTERACTIONS" in valid_tokens: theory_too_long = True
-        elif "TOO_MANY_PARAMS" in valid_tokens: theory_too_long = True
         valid_token_list.append(vocab.encode(valid_tokens))
 
         # ----------------------- CHECK VALID TOKENS --------------------------------
@@ -69,62 +68,27 @@ def generate_theory(grammar_masker: GrammarMasker,
             token = random.choices(valid_tokens, weights=chiral_weights, k=1)[0]
         else:
             token = random.choice(valid_tokens)
-
-        
+        #print(token)
         search_space *= len(valid_tokens)
         sequence.append(token)
         state = grammar_masker.step(state, token)
         if print_tokens: print(state.current_block, token)
         prev_token = token
+    grammar_masker.post_init(state)
 
     full_model = {"too_long": theory_too_long,
+                  "sequence": sequence,
                   "gauge_groups": state.gauge_groups,
                   "vevs": state.vevs,
-                  "particles": state.particles,
                   "multiplets": state.multiplets,
                   "interactions": state.interactions,
                   "anomalies": state.anomalies,
-                  "params": state.params,
-                  "sequence": sequence,
-                  "valid_tokens": valid_token_list
+                  #"free_params": state.free_param_list,
+                  "internal_params": state.IntParam,
+                  "external_params": state.ExtParam,
+                  "tadpole_params": state.tadpole_params,
+                  "matching_conditions": state.matching_conditions
                   }
-    return full_model
-
-def get_model_dict(grammar_masker: GrammarMasker, prompt: list[str]):
-    state = grammar_masker.init_state()
-    sequence = ["BOS"]
-    prev_token = "BOS"
-    search_space = 1
-
-    if prompt[0] == "BOS": prompt = prompt[1:]
-    if prompt[-1] == "EOS": prompt = prompt[:-1]
-
-    for token in prompt:
-        valid_tokens = grammar_masker.get_valid_tokens(state, prev_token)
-
-        # ----------------------- CHECK VALID TOKENS -----------------------
-        if not valid_tokens:
-            print(f"Warning: No valid tokens after {prev_token} (in prompt)")
-            break
-        if token not in valid_tokens: 
-            print(f"Warning: Token '{token}' is not valid after {prev_token} (in prompt)")
-            print(f"Valid tokens: {valid_tokens}")
-            break
-        # ----------------------- END CHECK VALID TOKENS -----------------------
-
-        sequence.append(token)
-        search_space *= len(valid_tokens)
-        state = grammar_masker.step(state, token)
-        prev_token = token
-    
-    full_model = {"gauge_groups": state.gauge_groups,
-                  "vevs": state.vevs,
-                  "multiplets": state.multiplets,
-                  "interactions": state.interactions,
-                  "anomalies": state.anomalies,
-                  "params": state.params
-                  }
-
     return full_model
 
 

@@ -1,16 +1,19 @@
+import copy
+from fractions import Fraction
 from typing import Dict, List, Any, Set, Optional, Tuple
+
 from grammar.state import GrammarState
+from grammar.PDG import PDG_IDS
+from grammar import utils
 import grammar.vocab as vocab
 import grammar.groups.representation as rep
 import grammar.groups.anomaly as anomaly
-import copy
+import grammar.name_convention as nc
+import grammar.interactions.yukawa as term_yukawa 
+import grammar.interactions.phi4 as term_phi4
+import grammar.interactions.phi3 as term_phi3
+import grammar.interactions.phi2 as term_phi2
 
-import grammar.interactions.yukawa as yukawa_term 
-import grammar.interactions.phi4 as phi4_term
-import grammar.interactions.phi3 as phi3_term
-import grammar.interactions.phi2 as phi2_term
-
-from grammar import utils
 from config import config
 
 class GrammarMasker:
@@ -83,8 +86,7 @@ class GrammarMasker:
             if state.chirality == "NULL":
                 if state.particle_type == "CSCALAR":
                     state.charge_opts["NULL"].remove(token)
-                elif state.particle_type == "RSCALAR": 
-                    pass
+                elif state.particle_type == "RSCALAR": pass
                 else:  # FERMION
                     state.charge_opts["LEFT"].remove(token)
                     state.charge_opts["RIGHT"].remove(token)
@@ -133,42 +135,73 @@ class GrammarMasker:
         #elif token in (*vocab.REPRESENTATIONS, *vocab.HYPERCHARGES): state.rep_list.append(token)
         elif token == "END_REPS" and state.current_block == "MULTIPLET": 
             state.charge_list = rep.get_allowed_charge(state.rep_list)
-            state.tagged_ptcls = {charge: [] for charge in state.charge_list}
-            state.mplt_mass_list = {charge: [] for charge in state.charge_list}
+            state.ptcl_list = {charge: [] for charge in state.charge_list}
+            state.mass_list = {charge: [] for charge in state.charge_list}
+            state.name_list = {charge: [] for charge in state.charge_list}
+            state.width_list = {charge: [] for charge in state.charge_list}
+            state.pdgi_list = {charge: [] for charge in state.charge_list}
+
         elif token in vocab.DIMS: state.dim = token
         elif token in vocab.GENS: 
-            
-            state.gen = token
+            state.gen = int(token[4:])
             color = "NO_COLOR" if state.rep_list[0] == "singlet" else "COLOR"
-            gen = int(state.gen[4:])
             
             for charge in state.charge_list:
                 if state.multiplet_type == "FERMION": particle_dict = state.particle_inventory["FERMION"][state.chirality][color]
                 else: particle_dict = state.particle_inventory[state.multiplet_type][color]
                 particle = particle_dict.get(charge)
                 if particle:
-                    state.tagged_ptcls[charge] = particle.get("ptcls", [])
-                    particle["num_ptcls"] -= gen
+                    state.ptcl_list[charge] = particle.get("ptcls", [])
+                    particle["num_ptcls"] -= state.gen
 
         elif token in vocab.VEV_IDS and state.current_block == "MULTIPLET": 
             state.rep_list = state.vevs[token]["rep_list"]
             state.charge_list = rep.get_allowed_charge(state.rep_list)
             state.dim = state.vevs[token]["dim"]
-            state.gen = "gen_1"
+            state.gen = 1
             state.vevs[token]["multiplets"] = state.multiplet_id
             state.vev_opts.remove(token)
             state.vev_id = token
+            
+            # fixed for Higgs doublet
+            state.ptcl_list = {"charge_6": ["Hp"], "charge_0": ["H0"]}
+            state.mass_list = {"charge_6": [], "charge_0": []}
+            state.name_list = {"charge_6": [], "charge_0": []}
+            state.width_list = {"charge_6": [], "charge_0": []}
+            state.pdgi_list = {"charge_6": [251], "charge_0": [250]}
+
         elif token == "END_MULTIPLET": 
+            if state.rep_list == ["singlet", "fnd", "hypercharge_3"] and state.multiplet_type == "CSCALAR": mplt_name = "H"
+            elif state.rep_list == ["singlet", "fnd", "hypercharge_-3"] and state.multiplet_type == "FERMION": mplt_name = "l"
+            elif state.rep_list == ["singlet", "singlet", "hypercharge_-6"] and state.multiplet_type == "FERMION": mplt_name = "e"
+            elif state.rep_list == ["fnd", "fnd", "hypercharge_1"] and state.multiplet_type == "FERMION": mplt_name = "q"
+            elif state.rep_list == ["fnd", "singlet", "hypercharge_4"] and state.multiplet_type == "FERMION": mplt_name = "u"
+            elif state.rep_list == ["fnd", "singlet", "hypercharge_-2"] and state.multiplet_type == "FERMION": mplt_name = "d"
+            else:
+                if state.multiplet_type == 'FERMION' and state.rep_list[0] != 'singlet':
+                    prefix = "Q"
+                elif state.multiplet_type == 'FERMION' and state.rep_list[0] == 'singlet':
+                    prefix = "L"
+                elif state.multiplet_type in ['CSCALAR', 'RSCALAR']:
+                    prefix = "S"
+                suffix = nc.num2abc(state.X_num+1)
+                mplt_name = f"{prefix}{suffix}"
+                state.X_num += 1
+            
             state.multiplets[state.multiplet_id] = {
                 "id": state.multiplet_id,
+                "name": mplt_name,
                 "type": state.multiplet_type,
                 "chirality": state.chirality,
                 "rep_list": state.rep_list,
                 "gen": state.gen,
                 "dim": state.dim,
                 "charges": state.charge_list,
-                "tagged_ptcls": state.tagged_ptcls,
-                "mplt_mass_list": state.mplt_mass_list,
+                "ptcl_list": state.ptcl_list,
+                "mass_list": state.mass_list,
+                "name_list": state.name_list,
+                "width_list": state.width_list,
+                "pdgi_list": state.pdgi_list,
                 "vev_id": state.vev_id
             }
             state.multiplet_id = None
@@ -176,7 +209,7 @@ class GrammarMasker:
             state.chirality = None
             state.charge_list = []
             state.rep_list = []
-            state.tagged_ptcls = {}
+            state.ptcl_list = {}
             state.gen = 0
             state.dim = 0
             state.vev_id = None
@@ -185,66 +218,68 @@ class GrammarMasker:
         elif token == "INTERACTION_BLOCK": 
             state.current_block = "INTERACTION"
             # Initialize allowed multiplets for each interaction type
-            state.allowed_mplts["TERM_PHI2"] = phi2_term.allowed_mplts(state.multiplets)
-            state.allowed_mplts["TERM_PHI3"] = phi3_term.allowed_mplts(state.multiplets)
-            state.allowed_mplts["TERM_PHI4"] = phi4_term.allowed_mplts(state.multiplets)
-            state.allowed_mplts["TERM_YUKAWA"] = yukawa_term.allowed_mplts(state.multiplets)
+            state.allowed_mplts["TERM_PHI2"] = term_phi2.allowed_mplts(state.multiplets)
+            state.allowed_mplts["TERM_PHI3"] = term_phi3.allowed_mplts(state.multiplets)
+            state.allowed_mplts["TERM_PHI4"] = term_phi4.allowed_mplts(state.multiplets)
+            state.allowed_mplts["TERM_YUKAWA"] = term_yukawa.allowed_mplts(state.multiplets)
         elif token in vocab.INTERACTION_TYPES: state.interaction_type = token
         elif token in vocab.INTERACTION_IDS: state.interaction_id = token
-        elif token in [*vocab.TAGS, *vocab.VEV_IDS, *vocab.PARAM_IDS] and state.current_block == "INTERACTION": 
+        elif token in [*vocab.TAGS, *vocab.VEV_IDS, *vocab.MASS, *vocab.PARAMETERS, "PARAM"] and state.current_block == "INTERACTION": 
             state.param_list.append(token)
-            if token in state.param_opts: state.param_opts.remove(token)
-            if token in vocab.PARAM_IDS:
-                if state.interaction_type == "TERM_YUKAWA":
-                    state.params[token] = yukawa_term.get_param(state.last_token)
-                elif state.interaction_type == "TERM_PHI4":
-                    state.params[token] = vocab.PARAMETERS
-                elif state.interaction_type == "TERM_PHI3":
-                    state.params[token] = vocab.MASS
-                elif state.interaction_type == "TERM_PHI2":
-                    state.params[token] = vocab.MASS
-                state.next_param_id += 1
+            if token in state.param_opts: state.param_opts.remove(token)            
             if state.interaction_type == "TERM_YUKAWA":
-                for idx in [1, 2]:
-                    mplt = state.multiplets[state.mplt_list[idx]]
-                    if token not in mplt["mplt_mass_list"][state.charge_eigenstate]:
-                        mplt["mplt_mass_list"][state.charge_eigenstate].append(token)
+                if state.multiplets[state.mplt_list[0]]["vev_id"]:
+                    for idx in [1, 2]:
+                        mplt = state.multiplets[state.mplt_list[idx]]
+                        if token.startswith("SM_"):
+                            mplt["name_list"][state.charge_eigenstate].append(PDG_IDS[token]['name'])
+                            mplt["mass_list"][state.charge_eigenstate].append(PDG_IDS[token]['mass'])
+                            mplt["width_list"][state.charge_eigenstate].append(PDG_IDS[token]['width'])
+                            mplt["pdgi_list"][state.charge_eigenstate].append(PDG_IDS[token]['pdgid'])
+                        else: 
+                            mplt["name_list"][state.charge_eigenstate].append(f"X{nc.num2abc(state.X_ptcl + 1 - 10000)}")
+                            mplt["mass_list"][state.charge_eigenstate].append(float(token[5:]))
+                            mplt["width_list"][state.charge_eigenstate].append("Automatic")
+                            mplt["pdgi_list"][state.charge_eigenstate].append(state.X_ptcl + 1)
+                    if not token.startswith("SM_"): state.X_ptcl += 1
 
         elif token in vocab.MULTIPLET_IDS and state.current_block == "INTERACTION": 
             state.mplt_list.append(token)
         elif token == "END_MPLT":
             if state.interaction_type == "TERM_YUKAWA":
+                scalar = state.multiplets[state.mplt_list[0]]
                 mplt_left = state.multiplets[state.mplt_list[1]]
                 mplt_right = state.multiplets[state.mplt_list[2]]
-                state.charge_eigenstate = list(set(mplt_left["charges"]) & set(mplt_right["charges"]))[0]
-                
-                # Use set intersection for efficiency
-                state.param_opts = utils.mass_ordering(mplt_left["tagged_ptcls"][state.charge_eigenstate])
-
-                gen_left = int(mplt_left["gen"][4:])  # "gen_" is 4 chars
-                gen_right = int(mplt_right["gen"][4:])
-                state.num_params = max(gen_left, gen_right)
-                mplt_left["gen"] = f"gen_{state.num_params}"
-                mplt_right["gen"] = f"gen_{state.num_params}"
+                state.charge_eigenstate = list[Any](set(mplt_left["charges"]) & set(mplt_right["charges"]))[0]
+                state.param_opts = utils.mass_ordering(mplt_left["ptcl_list"][state.charge_eigenstate])
+                state.num_params = mplt_left["gen"]
+                mplt_right["gen"] = state.num_params
                 state.allowed_mplts["TERM_YUKAWA"].remove(state.mplt_list)
+                state.LagHC = term_yukawa.get_Lag(scalar, mplt_left, mplt_right)
             elif state.interaction_type == "TERM_PHI4":
                 state.num_params = 1
                 state.allowed_mplts["TERM_PHI4"].remove(state.mplt_list)
+                state.LagNoHC = term_phi4.get_Lag(state.multiplets[state.mplt_list[0]])
             elif state.interaction_type == "TERM_PHI3":
                 state.num_params = 1
                 state.allowed_mplts["TERM_PHI3"].remove(state.mplt_list)
+                state.LagNoHC = term_phi3.get_Lag(state.multiplets[state.mplt_list[0]])
             elif state.interaction_type == "TERM_PHI2":
                 state.num_params = 1
                 if state.multiplets[state.mplt_list[0]]["vev_id"]:
                     state.param_opts.append(state.multiplets[state.mplt_list[0]]["vev_id"])
                 state.allowed_mplts["TERM_PHI2"].remove(state.mplt_list)
+                state.LagNoHC = term_phi2.get_Lag(state.multiplets[state.mplt_list[0]])
 
         elif token == "END_INTERACTION":
+
             state.interactions[state.interaction_id] = {
                 "id": state.interaction_id,
                 "type": state.interaction_type,
                 "param_list": state.param_list,
-                "mplt_list": state.mplt_list
+                "mplt_list": state.mplt_list,
+                "LagHC": state.LagHC,
+                "LagNoHC": state.LagNoHC
             }
             state.interaction_id = None
             state.interaction_type = None
@@ -253,6 +288,8 @@ class GrammarMasker:
             state.mplt_list = []
             state.charge_eigenstate = None
             state.num_params = 0
+            state.LagHC = None
+            state.LagNoHC = None
     
         # ======================== ANOMALY BLOCK ========================
         elif token == "ANOMALY_BLOCK": state.current_block = "ANOMALY"
@@ -270,15 +307,9 @@ class GrammarMasker:
                 coeff = func(state.multiplets)
                 state.anomalies[key] = coeff
 
-        # ======================== PARAMETER BLOCK ========================
-        elif token == "PARAM_BLOCK": state.current_block = "PARAM"
-        elif token in vocab.PARAM_IDS: state.param_id = token
-        elif token in [*vocab.PARAMETERS, *vocab.MASS]: 
-            state.params[state.param_id] = token
-            state.param_idx += 1
-
         # ================== UPDATE LAST TOKEN AND LENGTH ==================
         elif token == "EOS": pass
+
         state.last_token= token
         state.length += 1
         return state
@@ -440,28 +471,20 @@ class GrammarMasker:
                         state.allowed_mplts[state.interaction_type], state.mplt_list
                     )
             elif token == "END_MPLT": return ["PARAMS"]
-            elif token in ["PARAMS", *vocab.PARAM_IDS, *vocab.TAGS, *vocab.VEV_IDS]: 
-                if len(state.param_list) == state.num_params: return ["END_PARAM"]
+            elif token in ["PARAMS", *vocab.TAGS, *vocab.VEV_IDS, *vocab.MASS, *vocab.PARAMETERS]: 
+                if len(state.param_list) == state.num_params: 
+                    return ["END_PARAM"]
                 elif state.param_opts: return [state.param_opts[0]]
                 elif state.interaction_type == "TERM_YUKAWA": 
-                    idx = state.next_param_id
-                    if idx > config.max_free_param_num: return ["TOO_MANY_PARAMS"]
-                    return [f"p_{idx}"]
+                    return term_yukawa.get_valid_param(state.last_token)
                 elif state.interaction_type == "TERM_PHI4": 
-                    idx = state.next_param_id
-                    if idx > config.max_free_param_num: return ["TOO_MANY_PARAMS"]
-                    return [f"p_{idx}"]
+                    return vocab.PARAMETERS
                 elif state.interaction_type == "TERM_PHI3": 
-                    idx = state.next_param_id
-                    if idx > config.max_free_param_num: return ["TOO_MANY_PARAMS"]
-                    return [f"p_{idx}"]
+                    return vocab.MASS
                 elif state.interaction_type == "TERM_PHI2": 
                     vev_id = state.multiplets[state.mplt_list[0]]["vev_id"]
                     if vev_id: return [vev_id]
-                    else: 
-                        idx = state.next_param_id
-                        if idx > config.max_free_param_num: return ["TOO_MANY_PARAMS"]
-                        return [f"p_{idx}"]
+                    else: return vocab.MASS
             elif token == "END_PARAM": return ["END_INTERACTION"]
             elif token == "END_INTERACTION":
                 if len(state.interactions) == config.max_interactions: 
@@ -485,20 +508,65 @@ class GrammarMasker:
                 key, func = anomaly_funcs[idx]
                 coeff = func(state.multiplets)
                 return [anomaly.anomaly_range(coeff)]
-            else: return ["PARAM_BLOCK"]
+            else: return ["EOS"]
 
-        # ======================== PARAMETER BLOCK ========================
-        # elif token == "PARAM_BLOCK": return ["p_1"]
-        elif token in ["PARAM_BLOCK",*vocab.PARAMETERS, *vocab.MASS]: 
-            if state.param_idx == len(state.params): return ["EOS"]
-            else: return [f"p_{state.param_idx}"]
-        elif token in vocab.PARAM_IDS: return state.params[token]
+
+    def post_init(self, state: GrammarState):
+        """ Post Initialize the theory dict for model file generation """
+        for _, multiplet in state.multiplets.items():
+            elements = []
+            for charge in multiplet["charges"]:
+                # ----- fill in the physical particles -----
+                ptcl_list = multiplet["ptcl_list"][charge]
+                name_list = multiplet["name_list"][charge]
+                if not name_list and not ptcl_list:
+                    multiplet["name_list"][charge] = [f"X{nc.num2abc(state.X_ptcl + i + 1- 10000)}" for i in range(1, multiplet["gen"] + 1)]
+                    multiplet["mass_list"][charge] = [0.0] * multiplet["gen"]
+                    multiplet["width_list"][charge] = ["Automatic"] * multiplet["gen"]
+                    multiplet["pdgi_list"][charge] = [state.X_ptcl + i for i in range(1, multiplet["gen"] + 1)]
+                    state.X_ptcl += multiplet["gen"]
+
+                elif not name_list and ptcl_list:
+                    multiplet["name_list"][charge] = [PDG_IDS[ptcl]["name"] for ptcl in ptcl_list]
+                    multiplet["mass_list"][charge] = [0.0] * multiplet["gen"]
+                    multiplet["width_list"][charge] = ["Automatic"] * multiplet["gen"]
+                    multiplet["pdgi_list"][charge] = [PDG_IDS[ptcl]["pdgid"] for ptcl in ptcl_list]
+                    if len(ptcl_list) < multiplet["gen"]:
+                        for i in range(multiplet["gen"] - len(ptcl_list)):
+                            multiplet["name_list"][charge].append(f"X{nc.num2abc(state.X_ptcl + i + 1- 10000)}")
+                            multiplet["pdgi_list"][charge].append(state.X_ptcl + i + 1)
+                            state.X_ptcl += 1
+
+                # ----- fill in the unphysical particles -----
+                chiral_idx = 1 if multiplet["chirality"] in {"LEFT", "NULL"} else -1
+                rep_map = {
+                    0: lambda rep: '1' if rep == "singlet" else str(chiral_idx * 3) if rep == "fnd" else "",
+                    1: lambda rep: '1' if rep == "singlet" else str(chiral_idx * 2) if rep == "fnd" else "",
+                    2: lambda rep: str(chiral_idx * Fraction(int(rep.split("_")[1]), 6)) if rep.startswith("hypercharge_") else "",
+                }
+                rep_str = [rep_map[idx](rep) for idx, rep in enumerate(multiplet["rep_list"]) if idx in rep_map and rep_map[idx](rep)]
+                rep_str = ", ".join(reversed(rep_str))
+                
+                element_name = multiplet["name_list"][charge][0]
+                if element_name == "ve": element_name = 'v'
+                if multiplet["chirality"] == "LEFT": elements.append(f"{element_name}L")
+                elif multiplet["chirality"] == "RIGHT": elements.append(f"conj[{element_name}R]")
+                else: elements.append(element_name)
+            if multiplet["dim"] > 1: elements = f"{{{', '.join(elements)}}}"
+            else: elements = elements[0]
+            multiplet["multiplet_def"] = f"{multiplet['name']}, {multiplet['gen']}, {elements}, {rep_str}"
         
-        # ======================== FALLBACK ========================
-        else:
-            # If no condition matched, this is an unexpected state
-            print(f"WARNING: get_valid_tokens called with unexpected token='{token}', state.current_block='{state.current_block}'")
-            print(f"         state.length={state.length}, state.last_token='{state.last_token}'")
-            # Return EOS to gracefully terminate
-            return ["EOS"]
-        
+        for _, interaction in state.interactions.items():
+            if interaction["type"] in ("TERM_PHI2", "TERM_PHI3", "TERM_PHI4", "TERM_YUKAWA"):
+                term_map = {
+                    "TERM_PHI2": term_phi2,
+                    "TERM_PHI3": term_phi3,
+                    "TERM_PHI4": term_phi4,
+                    "TERM_YUKAWA": term_yukawa,
+                }
+                result = term_map[interaction["type"]].get_param(state.multiplets, interaction, state.LesHouches_idx)
+                state.ExtParam.update(result["ext_param"])
+                state.IntParam.update(result["int_param"])
+                state.LesHouches_idx = result["LesHouches_idx"]
+                state.matching_conditions.extend(result["matching_conditions"])
+                state.tadpole_params.extend(result["tadpole_params"])

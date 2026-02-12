@@ -1,10 +1,4 @@
 ######################################################
-###                                                ###
-###      Standard Model of Particle Physics        ###
-###                                                ###
-######################################################
-
-######################################################
 GAUGE_GROUP_BLOCK
 # start   id   rank    end        # name         boson 
 GAUGE_U   g_1  rank_1  END_GAUGE  # hypercharge  B
@@ -32,20 +26,9 @@ MULTIPLET_BLOCK
 MPLT_CSCALAR   m_1  NULL       ACQUIRE    v_1  END_MULTIPLET  # Higgs doublet
 MPLT_FERMION   m_2  LEFT       REPS  singlet fnd hypercharge_-3 END_REPS      dim_2  gen_3  END_MULTIPLET  # left lepton
 MPLT_FERMION   m_3  RIGHT      REPS  singlet singlet hypercharge_-6 END_REPS  dim_1  gen_3  END_MULTIPLET  # electron-like lepton
-MPLT_FERMION   m_4  LEFT       REPS  fnd fnd hypercharge_1 END_REPS           dim_2  gen_3  END_MULTIPLET  # left quark
+MPLT_FERMION   m_4  LEFT       REPS  fnd fnd hypercharge_1 END_REPS           dim_2  gen_2  END_MULTIPLET  # left quark
 MPLT_FERMION   m_5  RIGHT      REPS  fnd singlet hypercharge_4 END_REPS       dim_1  gen_3  END_MULTIPLET  # right up-type quark
 MPLT_FERMION   m_6  RIGHT      REPS  fnd singlet hypercharge_-2 END_REPS      dim_1  gen_3  END_MULTIPLET  # right down-type quark
 
 ######################################################
 INTERACTION_BLOCK
-# start      id   mplt_list                   parameters                                      end
-TERM_PHI2    i_1  MPLTS m_1 END_MPLT          PARAMS v_1                 END_PARAM            END_INTERACTION
-TERM_PHI4    i_2  MPLTS m_1 END_MPLT          PARAMS param_2e-1          END_PARAM            END_INTERACTION
-TERM_YUKAWA  i_3  MPLTS m_1 m_2 m_3 END_MPLT  PARAMS SM_E SM_MU SM_TAU   END_PARAM            END_INTERACTION
-TERM_YUKAWA  i_4  MPLTS m_1 m_4 m_5 END_MPLT  PARAMS SM_U SM_C  mass_1e2 END_PARAM            END_INTERACTION
-TERM_YUKAWA  i_5  MPLTS m_1 m_4 m_6 END_MPLT  PARAMS SM_D SM_S  SM_B     END_PARAM            END_INTERACTION
-
-######################################################
-ANOMALY_BLOCK
-ZERO ZERO ZERO ZERO ZERO
-

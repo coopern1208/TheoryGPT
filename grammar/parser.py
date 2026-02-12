@@ -47,15 +47,15 @@ def render_model(model: dict):
     output.append("\n =============================== Vevs =============================== \n")
     for vev_id,vev in model["vevs"].items():
         output.append(f"{vev}")
-    output.append("\n =============================== Particles =============================== \n")
-    for particle_type,particle in model["particles"].items():
-        output.append(f"----------  {particle_type:5s}----------")
-        for key, value in particle.items():
-            output.append(f"    {key:15s}:")
-            for color, color_value in value.items():
-                output.append(f"        {color:15s}:")
-                for charge, charge_value in color_value.items():
-                    output.append(f"            {charge:15s}: {charge_value}")
+    # output.append("\n =============================== Particles =============================== \n")
+    # for particle_type,particle in model["particles"].items():
+    #     output.append(f"----------  {particle_type:5s}----------")
+    #     for key, value in particle.items():
+    #         output.append(f"    {key:15s}:")
+    #         for color, color_value in value.items():
+    #             output.append(f"        {color:15s}:")
+    #             for charge, charge_value in color_value.items():
+    #                 output.append(f"            {charge:15s}: {charge_value}")
     output.append("\n =============================== Multiplets =============================== \n")
     for multiplet_id,multiplet in model["multiplets"].items():
         output.append(f"----------  {multiplet_id:5s}----------")
@@ -70,6 +70,6 @@ def render_model(model: dict):
     for anomaly_id,anomaly in model["anomalies"].items():
         output.append(f"{anomaly_id:15s}: {anomaly}")
     output.append("\n =============================== Params =============================== \n")
-    for param_id,param in model["params"].items():
-        output.append(f"{param_id:4s}: {param}")
+    for param_id,param in model[f"external_params"].items():
+        output.append(f"{param_id:4s}: {param['Value']}")
     return "\n".join(output)

@@ -200,12 +200,5 @@
         "Width": 0
       }
     },
-      "WeylFermionAndIndermediate": {
-        "q": {
-          "LaTeX": "q"
-      },
-        "H": {
-          "LaTeX": "H"
-        }
-    }
+      "WeylFermionAndIndermediate": {}
   }

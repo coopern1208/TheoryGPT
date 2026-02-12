@@ -17,10 +17,3 @@ SARAH[OutputDirectory] = PathToModel;
 Start[ModelName];
 
 MakeSPheno[IncludeFlavorKit -> False, TwoLoop -> False, IncludeLoopDecays -> False, Include2loopMasses -> False] // Timing;
-
-
-
-
-
-
-

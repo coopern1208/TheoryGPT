@@ -60,8 +60,9 @@ class GrammarState:
     rep_list: list[str] = field(default_factory=list)
     dim: int = 0
     gen: int = 0
-    tagged_ptcls: dict = field(default_factory=dict)
-    mplt_mass_list: dict = field(default_factory=dict)
+    ptcl_list: dict = field(default_factory=dict)
+    mass_list: dict = field(default_factory=dict)
+    width_list: dict = field(default_factory=dict)
     charge_eigenstate: int = None
     
     # interaction block
@@ -69,16 +70,36 @@ class GrammarState:
     interaction_id: str = None
     interaction_type: str = None
     param_list: list[str] = field(default_factory=list)
-    num_params: int = 0
     mplt_list: list[str] = field(default_factory=list)
     param_opts: list[str] = field(default_factory=list)
+    num_params: int = 0
+    LagHC: str = None
+    LagNoHC: str = None
 
     # anomaly block
     anomalies: dict = field(default_factory=dict)
 
     # parameter block
-    param_id: str = None
-    param_idx: int = 1
-    params: dict = field(default_factory=lambda: {"v_1": 246.0})
-    next_param_id: int = 1  # Track next param ID for interaction block
+    # free_param_idx: int = 1
+    # free_param_list: dict = field(default_factory=lambda: {"v_1": {"value": 246.0, "unit": "mass"}})
+    IntParam: dict = field(default_factory=dict)
+    ExtParam: dict = field(default_factory=dict)
+    
+
+    # post init
+    X_num: int = 0
+    X_ptcl: int = 10000
+    LesHouches_idx: int = 1
+    tadpole_params: list[str] = field(default_factory=list)
+    matching_conditions: list[str] = field(default_factory=lambda: 
+        ["v, vSM", "g1, g1SM", "g2, g2SM", "g3, g3SM"]
+    )
+
+    @property
+    def params(self) -> dict:
+        """Combine internal and external parameters into a single dictionary."""
+        return {**self.IntParam, **self.ExtParam}
+
+
+    
 

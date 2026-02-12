@@ -120,5 +120,23 @@ class Config:
     RL_TEMPERATURE: float = 1.0
     RL_USE_CURRICULUM: bool = False
 
+    # ========================================================================
+    # SARAH Interface Parameters
+    # ========================================================================
+    SARAH_PATH: str = "../SARAH-4.15.4"
+    SPHENO_PATH: str = "../SPheno-4.0.5"
+    MODEL_BASE: str = "dataset/models"
+    OBSERVABLES_PATH: str = "observables.json"
+    TIMEOUT: int = 1
+    SIGMA_THRESHOLD: int = 3
+    KEEP_LOG: bool = True
+    LOOP_MASS: bool = True
+    INCLUDE_TACHYON: bool = True
+    CALC_DECAYS: bool = False
+    MASS_PRECISION: float = 1e-6
+    THREE_BODY_DECAYS: bool = False
+    HIGGS_BOUNDS: bool = False
+    EFT_HIGGS_COUPLING: bool = False
+    DIPHOTON_WIDTH: bool = False
 
 config = Config()

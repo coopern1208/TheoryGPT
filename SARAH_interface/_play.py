@@ -5,30 +5,20 @@ from grammar.masker import GrammarMasker
 import grammar.reward as reward
 import matplotlib.pyplot as plt
 
-from grammar.debug import seq
-
+from SARAH_interface.write_model import SARAHFile
 prompt = read_model_txt("dataset/prompts/SM_full.txt")
 #prompt = read_model_txt("dataset/prompts/SM_gauge_prompt.txt")
 #prompt = read_model_txt("dataset/prompts/debug.txt")
-#prompt = seq
 all_rewards = []
 perfect_case = 0
 
-#for i in range(1):
 grammar_masker = GrammarMasker()
 full_model = generate_theory(grammar_masker, 
                              prompt=prompt, 
                              print_tokens=False, 
                              seed=None)
+#print(render_model(full_model))
 
-
-rewards = reward.all_rewards(full_model)
-print(render_model(full_model))
-
-# if rewards['total_reward'] > -1: perfect_case += 1
-all_rewards.append(rewards['total_reward'])
-print("=============================== Rewards Seed =============================== \n")
-print(f"Anomalies Reward    : {rewards['anomalies_reward']:.2f}")
-print(f"Light Exotics       : {rewards['light_exotics_reward']:.2f}")
-print(f"Length Reward       : {rewards['length_reward']:.2f}")
-print(f"TOTAL REWARD        : {rewards['total_reward']:.2f}\n")
+standard_model = SARAHFile(model_name="SM", author="AI", full_model=full_model)
+standard_model.output_sarah()
+standard_model.get_free_parameters()

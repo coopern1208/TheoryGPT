@@ -61,7 +61,7 @@ INTERACTION_IDS = [f"i_{i+1}" for i in range(config.max_interactions)]
 # Parameter Vocab
 PARAM_IDS = [f"p_{i+1}" for i in range(config.max_free_param_num)]
 PARAMETERS = [f"param_{base}e{p}" for base in config.base for p in range(config.min_value_exp, config.max_value_exp+1)]
-MASS= ["mass_0"] + [f"mass_{base}e{i}" for base in config.base for i in range(config.min_mass_exp, config.max_mass_exp+1)]
+MASS= ["mass_0"] + [f"mass_{base}e{i}" for i in range(config.min_mass_exp, config.max_mass_exp+1) for base in config.base]
 
 GRAMMAR_TOKENS = [
     "BOS", "EOS", "PAD",
